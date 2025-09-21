@@ -117,3 +117,33 @@ class DataHandler:
         self.data = df
         return self.data
 
+    def get_dataset_information(self):
+        """
+        Function that prints a quick overview of the football dataset:
+        - shape
+        - unique leagues and seasons
+        - columns
+        - missing values per column
+        - basic statistics for numerical columns
+        """
+        if self.data is None:
+            raise ValueError("No data loaded. Please call load_data() first.")
+
+        df = self.data
+
+        print("📊 Dataset Overview")
+        print("--------------------")
+        print("Shape:", df.shape)
+        print("Leagues:", df['league'].unique() if 'league' in df.columns else "No 'league' column")
+        print("Seasons:", sorted(df['year'].unique()) if 'year' in df.columns else "No 'year' column")
+
+        print("\nColumns:")
+        print(df.columns.tolist())
+
+        print("\nMissing Values per Column:")
+        print(df.isna().sum()[df.isna().sum() > 0])
+
+        print("\nBasic Statistics (numeric columns):")
+        print(df.describe())
+
+
