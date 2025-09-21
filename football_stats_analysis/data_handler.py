@@ -49,9 +49,11 @@ class DataHandler:
                     all_matches.append(df)
         # print out if any column mismatches appear
         if column_mismatches:
-            print("⚠️ Warning: There are column mismatches between the csv files!")
+            print("Warning: There are column mismatches between the csv files!")
             for file, cols in column_mismatches.items():
                 print(f"{file}: {cols}")
+        else:
+            print("Data loading successful.")
 
         if all_matches:
             # add data into the class object
