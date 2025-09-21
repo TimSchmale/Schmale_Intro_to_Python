@@ -13,7 +13,8 @@ class DataHandler:
 
     def load_data(self):
         """
-        Function which loads all 40 .csv (5 different leagues with 8 years) files into one data frame
+        Function which loads all 40 .csv (5 different leagues with 8 years) files into one data frame.
+        Returns a data frame of all leagues data.
         """
         # initialize a list which holds the different csv files
         all_matches = []
@@ -64,3 +65,55 @@ class DataHandler:
 
         # give out the created data frame to be able to continue working with it in the notebook
         return self.data
+
+    def preprocess_data(self, relevant_cols = None, col_names = None):
+        """
+        Function to clean and prepare the football data for further analysis by:
+        - changing column names
+        - selecting relevant columns
+        - checking and handling of missing values
+
+        Parameters
+        ----------
+        relevant_cols : list, optional
+            List of column names to keep for analysis.
+            If None, all columns are kept.
+        col_names : list, optional
+            list for renaming columns, e.g. ["hometeam", ...].
+            Must have the same length as current dataframe columns.
+        Returns
+        -------
+        pd.DataFrame
+        Preprocessed football data.
+        """
+        # check if data is loaded, else raise an error
+        if self.data is None:
+            raise ValueError("No data loaded. Please call load_data() first.")
+
+        # take a copy of the loaded data to preprocess
+        df = self.data.copy()
+
+        # 1. Select relevant columns (or keep all)
+        if relevant_cols:
+            keep = [col for col in relevant_cols if col in df.columns]
+            df = df[keep]
+
+        # 2. Rename columns if provided
+        if col_names:
+            expected_len = len(relevant_cols) if relevant_cols else df.shape[1]
+            if len(col_names) != expected_len:
+                raise ValueError("Length of col_names must match number of selected columns")
+            df.columns = col_names
+
+            # 3. Check for missing values
+            na_counts = df.isna().sum()
+            if na_counts.sum() > 0:
+                print("Missing values detected:")
+                print(na_counts[na_counts > 0])
+            else:
+                print("No missing values found.")
+
+        # save and return the pre-processed df
+        self.data = df
+        return self.data
+
