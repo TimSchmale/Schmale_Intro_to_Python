@@ -131,7 +131,7 @@ class DataHandler:
 
         df = self.data
 
-        print("📊 Dataset Overview")
+        print("Dataset Overview")
         print("--------------------")
         print("Shape:", df.shape)
         print("Leagues:", df['league'].unique() if 'league' in df.columns else "No 'league' column")
