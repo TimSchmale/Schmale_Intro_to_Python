@@ -39,7 +39,14 @@ class StatsCalculator:
         df = self.data[(self.data['league'] == league) & (self.data['year'] == season)]
 
         if df.empty:
-            raise ValueError(f"No matches found for league '{league}' and season '{season}'")
+            available_leagues = self.data['league'].unique()
+            available_seasons = self.data['year'].unique()
+
+            raise ValueError(
+                f"No matches found for league '{league}' and season '{season}'.\n"
+                f"Available leagues: {sorted(available_leagues)}\n"
+                f"Available seasons: {sorted(available_seasons)}"
+            )
 
         # Initialize standings
         standings = {}
