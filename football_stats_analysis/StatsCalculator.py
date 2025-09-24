@@ -102,14 +102,14 @@ class StatsCalculator:
         Parameters
         ----------
         league : str
-            League identifier (e.g., 'EPL')
+            League identifier (e.g., 'bundesliga')
         season : str
-            Season identifier (e.g., '2015')
+            Season identifier (e.g., '2021-2022.csv')
 
         Returns
         -------
         pd.DataFrame
-            DataFrame with columns [Matchday, Team, Points, GD, Rank]
+            DataFrame with columns [Date, Matchday, Team, Points, GD, Rank]
             showing the rank of each team after every matchday.
         """
         df = self.data[(self.data['league'] == league) & (self.data['year'] == season)]
@@ -123,14 +123,15 @@ class StatsCalculator:
                 f"Available seasons: {sorted(available_seasons)}"
             )
 
-        # Sort games in order (assume dataset already chronological)
-        df = df.reset_index(drop=True)
+        # ensure Date is datetime
+        df["Date"] = pd.to_datetime(df["Date"])
+        df = df.sort_values("Date").reset_index(drop=True)
 
         standings = {}
         progression = []
 
-        matchday = 0
         for _, match in df.iterrows():
+            date = match["Date"]
             home, away = match['HomeTeam'], match['AwayTeam']
             hg, ag = match['FTHG'], match['FTAG']
 
@@ -165,23 +166,27 @@ class StatsCalculator:
                 standings[home]["Draws"] += 1
                 standings[away]["Draws"] += 1
 
-            # After each match, check if round is complete (optional)
-            matchday += 1
-
-            # Create ranking table
+            # Ranking-Tabelle erstellen
             table = pd.DataFrame.from_dict(standings, orient="index")
             table["GD"] = table["GF"] - table["GA"]
             table = table.sort_values(by=["Points", "GD", "GF"], ascending=[False, False, False])
             table["Rank"] = range(1, len(table) + 1)
 
-            # Store progression
+            # Save snapshot
             for team, row in table.iterrows():
                 progression.append({
-                    "Matchday": matchday,
+                    "Date": date,
                     "Team": team,
                     "Points": row["Points"],
                     "GD": row["GD"],
                     "Rank": row["Rank"]
                 })
 
-        return pd.DataFrame(progression)
+        progression_df = pd.DataFrame(progression)
+
+        # Matchday bestimmen: pro Team aufsteigend zählen
+        progression_df = progression_df.sort_values(["Date", "Team"])
+        progression_df["Matchday"] = progression_df.groupby("Team").cumcount() + 1
+
+        return progression_df
+
