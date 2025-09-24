@@ -4,7 +4,7 @@ import pandas as pd
 
 class DataHandler:
     """
-    Class which contains functions to load, combine and prepare the 40 football match data sets for a data analysis
+    Class which contains functions to load, combine, prepare and get the data set information of the 40 football match data sets for a data analysis
     """
 
     def __init__(self):
