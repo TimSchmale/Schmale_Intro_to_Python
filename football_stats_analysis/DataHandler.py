@@ -47,7 +47,7 @@ class DataHandler:
 
                     # add custom columns to differentiate between the leagues and seasons easily
                     df["league"] = league
-                    df["year"] = year
+                    df["year"] = str(year)[:9]
 
                     #   append the data frame to the already combined data sets
                     all_matches.append(df)
