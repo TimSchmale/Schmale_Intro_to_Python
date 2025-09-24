@@ -102,14 +102,14 @@ class StatsCalculator:
 
     def league_progression(self, league: str, season: str) -> pd.DataFrame:
         """
-        Calculate the progression of team rankings throughout a season for a given league.
+        Function to calculate the progression of team rankings throughout a season for a given league.
 
         Parameters
         ----------
         league : str
             League identifier (e.g., 'bundesliga')
         season : str
-            Season identifier (e.g., '2021-2022.csv')
+            Season identifier (e.g., '2021-2022')
 
         Returns
         -------
@@ -117,11 +117,15 @@ class StatsCalculator:
             DataFrame with columns [Date, Matchday, Team, Points, GD, Rank]
             showing the rank of each team after every matchday.
         """
+        # initialize a data frame that is reduced to selected league and column
         df = self.data[(self.data['league'] == league) & (self.data['year'] == season)]
 
+        # check if the input is correct and go into error handling if not
         if df.empty:
             available_leagues = self.data['league'].unique()
             available_seasons = self.data['year'].unique()
+
+            # raise an error if the season or league is incorrectly selected and give out the potential inputs for increased usability
             raise ValueError(
                 f"No matches found for league '{league}' and season '{season}'.\n"
                 f"Available leagues: {sorted(available_leagues)}\n"
@@ -132,6 +136,7 @@ class StatsCalculator:
         df["Date"] = pd.to_datetime(df["Date"])
         df = df.sort_values("Date").reset_index(drop=True)
 
+        #
         standings = {}
         progression = []
 
@@ -171,7 +176,7 @@ class StatsCalculator:
                 standings[home]["Draws"] += 1
                 standings[away]["Draws"] += 1
 
-            # Ranking-Tabelle erstellen
+            # Create current standing to save the snapshot
             table = pd.DataFrame.from_dict(standings, orient="index")
             table["GD"] = table["GF"] - table["GA"]
             table = table.sort_values(by=["Points", "GD", "GF"], ascending=[False, False, False])
@@ -187,9 +192,10 @@ class StatsCalculator:
                     "Rank": row["Rank"]
                 })
 
+        # get a final data frame
         progression_df = pd.DataFrame(progression)
 
-        # Matchday bestimmen: pro Team aufsteigend zählen
+        # determine the matchdays
         progression_df = progression_df.sort_values(["Date", "Team"])
         progression_df["Matchday"] = progression_df.groupby("Team").cumcount() + 1
 
