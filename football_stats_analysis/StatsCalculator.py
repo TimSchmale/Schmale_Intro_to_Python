@@ -131,6 +131,7 @@ class StatsCalculator:
             )
 
         # ensure Date is datetime
+        df = df.copy()
         df["Date"] = pd.to_datetime(df["Date"])
         df = df.sort_values("Date").reset_index(drop=True)
 
@@ -194,7 +195,7 @@ class StatsCalculator:
         progression_df = pd.DataFrame(progression)
 
         # determine the matchdays
-        progression_df = progression_df.sort_values(["Date", "Team"])
+        progression_df = progression_df.sort_values(["Team", "Date"])
         progression_df["Matchday"] = progression_df.groupby("Team").cumcount() + 1
 
         return progression_df
