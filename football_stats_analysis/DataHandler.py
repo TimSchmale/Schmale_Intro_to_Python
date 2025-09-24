@@ -8,6 +8,9 @@ class DataHandler:
     """
 
     def __init__(self):
+        """
+        Function which initializes a data handler object including a data path and a space to save the data
+        """
         self.path = "data/top5"
         self.data = None
 
@@ -48,6 +51,7 @@ class DataHandler:
 
                     #   append the data frame to the already combined data sets
                     all_matches.append(df)
+
         # print out if any column mismatches appear
         if column_mismatches:
             print("Warning: There are column mismatches between the csv files!")
@@ -81,6 +85,7 @@ class DataHandler:
         col_names : list, optional
             list for renaming columns, e.g. ["hometeam", ...].
             Must have the same length as current dataframe columns.
+
         Returns
         -------
         pd.DataFrame
@@ -93,19 +98,19 @@ class DataHandler:
         # take a copy of the loaded data to preprocess
         df = self.data.copy()
 
-        # 1. Select relevant columns (or keep all)
+        # select relevant columns (or keep all)
         if relevant_cols:
             keep = [col for col in relevant_cols if col in df.columns]
             df = df[keep]
 
-        # 2. Rename columns if provided
+        # rename columns if provided
         if col_names:
             expected_len = len(relevant_cols) if relevant_cols else df.shape[1]
             if len(col_names) != expected_len:
                 raise ValueError("Length of col_names must match number of selected columns")
             df.columns = col_names
 
-            # 3. Check for missing values
+            # check for missing values
             na_counts = df.isna().sum()
             if na_counts.sum() > 0:
                 print("Missing values detected:")
@@ -126,11 +131,15 @@ class DataHandler:
         - missing values per column
         - basic statistics for numerical columns
         """
+
+        # raise an error if no data is stored already
         if self.data is None:
             raise ValueError("No data loaded. Please call load_data() first.")
 
+        # get the data frame
         df = self.data
 
+        # print out the most important data frame info
         print("Dataset Overview")
         print("--------------------")
         print("Shape:", df.shape)
