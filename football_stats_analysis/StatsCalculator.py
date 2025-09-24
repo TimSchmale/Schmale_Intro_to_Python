@@ -1,5 +1,3 @@
-import os
-
 import pandas as pd
 
 class StatsCalculator:
@@ -200,4 +198,3 @@ class StatsCalculator:
         progression_df["Matchday"] = progression_df.groupby("Team").cumcount() + 1
 
         return progression_df
-
