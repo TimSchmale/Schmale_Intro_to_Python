@@ -100,102 +100,81 @@ class StatsCalculator:
 
     def league_progression(self, league: str, season: str) -> pd.DataFrame:
         """
-        Function to calculate the progression of team rankings throughout a season for a given league.
+        Function to calculate the progression of team standings throughout a season for a given league.
 
         Parameters
         ----------
         league : str
-            League identifier (e.g., 'bundesliga')
+            League identifier (e.g., 'epl')
         season : str
             Season identifier (e.g., '2021-2022')
 
         Returns
         -------
         pd.DataFrame
-            DataFrame with columns [Date, Matchday, Team, Points, GD, Rank]
-            showing the rank of each team after every matchday.
+            DataFrame with columns [Date, Matchday, Team, Points, GF, GA, GD]
+            showing the progression of each team after each of their matchdays.
         """
-        # initialize a data frame that is reduced to selected league and column
+        # Filter für Season und League
         df = self.data[(self.data['league'] == league) & (self.data['year'] == season)]
 
-        # check if the input is correct and go into error handling if not
         if df.empty:
             available_leagues = self.data['league'].unique()
             available_seasons = self.data['year'].unique()
-
-            # raise an error if the season or league is incorrectly selected and give out the potential inputs for increased usability
             raise ValueError(
                 f"No matches found for league '{league}' and season '{season}'.\n"
                 f"Available leagues: {sorted(available_leagues)}\n"
                 f"Available seasons: {sorted(available_seasons)}"
             )
 
-        # ensure Date is datetime
+        # Sortieren nach Datum
         df = df.copy()
-        df["Date"] = pd.to_datetime(df["Date"])
-        df = df.sort_values("Date").reset_index(drop=True)
+        df['Date'] = pd.to_datetime(df['Date'])
+        df = df.sort_values('Date')
 
-        #
-        standings = {}
+        # Alle Teams sammeln
+        teams = pd.unique(df[['HomeTeam', 'AwayTeam']].values.ravel())
+
+        # Init für Teamstände
+        standings = {team: {'Points': 0, 'GF': 0, 'GA': 0, 'GD': 0} for team in teams}
         progression = []
 
+        # Spiele durchgehen
         for _, match in df.iterrows():
-            date = match["Date"]
-            home, away = match['HomeTeam'], match['AwayTeam']
-            hg, ag = match['FTHG'], match['FTAG']
+            home = match['HomeTeam']
+            away = match['AwayTeam']
+            gf_home = match['FTHG']
+            gf_away = match['FTAG']
 
-            # Initialize teams if not present
-            for team in [home, away]:
-                if team not in standings:
-                    standings[team] = {"Points": 0, "Played": 0, "Wins": 0,
-                                       "Draws": 0, "Losses": 0, "GF": 0, "GA": 0}
-
-            # Update matches played
-            standings[home]["Played"] += 1
-            standings[away]["Played"] += 1
-
-            # Update goals
-            standings[home]["GF"] += hg
-            standings[home]["GA"] += ag
-            standings[away]["GF"] += ag
-            standings[away]["GA"] += hg
-
-            # Update results
-            if hg > ag:
-                standings[home]["Points"] += 3
-                standings[home]["Wins"] += 1
-                standings[away]["Losses"] += 1
-            elif hg < ag:
-                standings[away]["Points"] += 3
-                standings[away]["Wins"] += 1
-                standings[home]["Losses"] += 1
+            # Punkte updaten
+            if gf_home > gf_away:
+                standings[home]['Points'] += 3
+            elif gf_home < gf_away:
+                standings[away]['Points'] += 3
             else:
-                standings[home]["Points"] += 1
-                standings[away]["Points"] += 1
-                standings[home]["Draws"] += 1
-                standings[away]["Draws"] += 1
+                standings[home]['Points'] += 1
+                standings[away]['Points'] += 1
 
-            # Create current standing to save the snapshot
-            table = pd.DataFrame.from_dict(standings, orient="index")
-            table["GD"] = table["GF"] - table["GA"]
-            table = table.sort_values(by=["Points", "GD", "GF"], ascending=[False, False, False])
-            table["Rank"] = range(1, len(table) + 1)
+            # Tore und GD updaten
+            standings[home]['GF'] += gf_home
+            standings[home]['GA'] += gf_away
+            standings[home]['GD'] = standings[home]['GF'] - standings[home]['GA']
 
-            # Save snapshot
-            for team, row in table.iterrows():
+            standings[away]['GF'] += gf_away
+            standings[away]['GA'] += gf_home
+            standings[away]['GD'] = standings[away]['GF'] - standings[away]['GA']
+
+            # Snapshot für Heim- und Auswärtsteam (ihre Matchday-Zählung +1)
+            for team in [home, away]:
+                team_games_played = len([p for p in progression if p['Team'] == team])
                 progression.append({
-                    "Date": date,
-                    "Team": team,
-                    "Points": row["Points"],
-                    "GD": row["GD"],
-                    "Rank": row["Rank"]
+                    'Team': team,
+                    'Matchday': team_games_played + 1,
+                    'Points': standings[team]['Points'],
+                    'GF': standings[team]['GF'],
+                    'GA': standings[team]['GA'],
+                    'GD': standings[team]['GD'],
+                    'Date': match['Date']
                 })
 
-        # get a final data frame
-        progression_df = pd.DataFrame(progression)
-
-        # determine the matchdays
-        progression_df = progression_df.sort_values(["Team", "Date"])
-        progression_df["Matchday"] = progression_df.groupby("Team").cumcount() + 1
-
-        return progression_df
+        return pd.DataFrame(progression)
