@@ -202,11 +202,7 @@ class StatsCalculator:
                 HomeYellowCards=('HY', 'mean'),
                 AwayYellowCards=('AY', 'mean'),
                 HomeRedCards=('HR', 'mean'),
-                AwayRedCards=('AR', 'mean'),
-                HomeAvgAge=('HomeAvgAge', 'mean'),
-                AwayAvgAge=('AwayAvgAge', 'mean'),
-                HomeMarketValue=('HomeMV', 'mean'),
-                AwayMarketValue=('AwayMV', 'mean')
+                AwayRedCards=('AR', 'mean')
             )
             .reset_index()
         )
