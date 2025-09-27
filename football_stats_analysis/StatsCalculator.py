@@ -100,7 +100,7 @@ class StatsCalculator:
 
     def league_progression(self, league: str, season: str) -> pd.DataFrame:
         """
-        Calculate the progression of team standings over a season in a cleaner way.
+        Calculate team standings progression over a season in a team-centered approach.
         """
         df = self.data[(self.data['league'] == league) & (self.data['year'] == season)].copy()
         if df.empty:
@@ -113,41 +113,36 @@ class StatsCalculator:
             )
 
         df['Date'] = pd.to_datetime(df['Date'])
-        df = df.sort_values('Date').reset_index(drop=True)
         teams = pd.unique(df[['HomeTeam', 'AwayTeam']].values.ravel())
 
-        # Initialize progression container
         progression = []
 
-        # Loop through matchdays (chronologisch nach Datum)
-        for i, match in df.iterrows():
-            # Update standings per match
-            home, away = match['HomeTeam'], match['AwayTeam']
-            gf_home, gf_away = match['FTHG'], match['FTAG']
+        # Teamzentrierte Berechnung
+        for team in teams:
+            team_matches = df[(df['HomeTeam'] == team) | (df['AwayTeam'] == team)].sort_values('Date')
+            points = 0
+            gf = 0
+            ga = 0
 
-            # create or update points for both teams
-            for team, scored, conceded in [(home, gf_home, gf_away), (away, gf_away, gf_home)]:
-                last = progression[-1] if progression and progression[-1]['Team'] == team else None
-                points = last['Points'] if last else 0
-                gf = last['GF'] if last else 0
-                ga = last['GA'] if last else 0
+            for matchday, (_, match) in enumerate(team_matches.iterrows(), 1):
+                if match['HomeTeam'] == team:
+                    scored, conceded = match['FTHG'], match['FTAG']
+                else:
+                    scored, conceded = match['FTAG'], match['FTHG']
 
-                # update points
-                if team == home and gf_home > gf_away:
+                # Punkte aktualisieren
+                if scored > conceded:
                     points += 3
-                elif team == away and gf_away > gf_home:
-                    points += 3
-                elif gf_home == gf_away:
+                elif scored == conceded:
                     points += 1
 
-                # update goals
                 gf += scored
                 ga += conceded
                 gd = gf - ga
 
                 progression.append({
                     'Team': team,
-                    'Matchday': len([p for p in progression if p['Team'] == team]) + 1,
+                    'Matchday': matchday,
                     'Points': points,
                     'GF': gf,
                     'GA': ga,
@@ -155,15 +150,16 @@ class StatsCalculator:
                     'Date': match['Date']
                 })
 
-        # Create DataFrame
         prog_df = pd.DataFrame(progression)
 
-        # Compute ranks per matchday
-        prog_df['Rank'] = prog_df.groupby('Matchday').apply(
-            lambda x: x.sort_values(by=['Points', 'GD', 'GF'], ascending=[False, False, False])
-            .assign(Rank=lambda d: range(1, len(d) + 1))
-        ).reset_index(drop=True)['Rank']
+        # Ränge pro Matchday bestimmen
+        ranks = []
+        for md, group in prog_df.groupby('Matchday'):
+            ranked = group.sort_values(by=['Points', 'GD', 'GF'], ascending=[False, False, False]).copy()
+            ranked['Rank'] = range(1, len(ranked) + 1)
+            ranks.append(ranked)
 
+        prog_df = pd.concat(ranks).sort_values(['Matchday', 'Rank']).reset_index(drop=True)
         return prog_df
 
     def league_comparison(self) -> pd.DataFrame:
