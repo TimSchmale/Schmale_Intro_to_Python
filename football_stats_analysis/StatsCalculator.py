@@ -112,7 +112,7 @@ class StatsCalculator:
         Returns
         -------
         pd.DataFrame
-            DataFrame with columns [Date, Matchday, Team, Points, GF, GA, GD]
+            DataFrame with columns [Date, Matchday, Team, Points, GF, GA, GD, Rank]
             showing the progression of each team after each of their matchdays.
         """
         # Filter für Season und League
@@ -164,17 +164,29 @@ class StatsCalculator:
             standings[away]['GA'] += gf_home
             standings[away]['GD'] = standings[away]['GF'] - standings[away]['GA']
 
-            # Snapshot für Heim- und Auswärtsteam (ihre Matchday-Zählung +1)
+            # Aktuelle Tabelle erstellen und nach Punkten, GD, GF sortieren
+            table = (
+                pd.DataFrame.from_dict(standings, orient='index')
+                .assign(Team=lambda x: x.index)
+                .sort_values(by=['Points', 'GD', 'GF'], ascending=[False, False, False])
+                .reset_index(drop=True)
+            )
+            table['Rank'] = table.index + 1
+
+            # Snapshot für Heim- und Auswärtsteam
             for team in [home, away]:
                 team_games_played = len([p for p in progression if p['Team'] == team])
+                row = table.loc[table['Team'] == team].iloc[0]
                 progression.append({
                     'Team': team,
                     'Matchday': team_games_played + 1,
-                    'Points': standings[team]['Points'],
-                    'GF': standings[team]['GF'],
-                    'GA': standings[team]['GA'],
-                    'GD': standings[team]['GD'],
+                    'Points': row['Points'],
+                    'GF': row['GF'],
+                    'GA': row['GA'],
+                    'GD': row['GD'],
+                    'Rank': row['Rank'],
                     'Date': match['Date']
                 })
 
         return pd.DataFrame(progression)
+
