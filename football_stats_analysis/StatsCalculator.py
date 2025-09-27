@@ -14,7 +14,7 @@ class StatsCalculator:
         data : pd.DataFrame
             The dataset returned by DataHandler.
         """
-        # raise error if noe da is passed
+        # raise error if no data is passed
         if data is None or data.empty:
             raise ValueError("Data must not be empty. Please provide a valid DataFrame.")
         self.data = data
