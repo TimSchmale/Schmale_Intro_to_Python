@@ -70,7 +70,7 @@ class DataHandler:
         # give out the created data frame to be able to continue working with it in the notebook
         return self.data
 
-    def preprocess_data(self, relevant_cols = None, col_names = None):
+    def preprocess_data(self, relevant_cols = None):
         """
         Function to clean and prepare the football data for further analysis by:
         - changing column names
@@ -82,9 +82,6 @@ class DataHandler:
         relevant_cols : list, optional
             List of column names to keep for analysis.
             If None, all columns are kept.
-        col_names : list, optional
-            list for renaming columns, e.g. ["hometeam", ...].
-            Must have the same length as current dataframe columns.
 
         Returns
         -------
@@ -102,21 +99,6 @@ class DataHandler:
         if relevant_cols:
             keep = [col for col in relevant_cols if col in df.columns]
             df = df[keep]
-
-        # rename columns if provided
-        if col_names:
-            expected_len = len(relevant_cols) if relevant_cols else df.shape[1]
-            if len(col_names) != expected_len:
-                raise ValueError("Length of col_names must match number of selected columns")
-            df.columns = col_names
-
-            # check for missing values
-            na_counts = df.isna().sum()
-            if na_counts.sum() > 0:
-                print("Missing values detected:")
-                print(na_counts[na_counts > 0])
-            else:
-                print("No missing values found.")
 
         # save and return the pre-processed df
         self.data = df
