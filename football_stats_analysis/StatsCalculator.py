@@ -113,9 +113,9 @@ class StatsCalculator:
         -------
         pd.DataFrame
             DataFrame with columns [Date, Matchday, Team, Points, GF, GA, GD, Rank]
-            showing the progression of each team after each of their matchdays.
+            showing the progression of each team over the duration of the season.
         """
-        # Filter für Season und League
+        # apply the filter for league and season to restrict the data frame
         df = self.data[(self.data['league'] == league) & (self.data['year'] == season)]
 
         if df.empty:
@@ -127,26 +127,27 @@ class StatsCalculator:
                 f"Available seasons: {sorted(available_seasons)}"
             )
 
-        # Sortieren nach Datum
+        # sort df by date to enable the following matchday calculations
         df = df.copy()
         df['Date'] = pd.to_datetime(df['Date'])
         df = df.sort_values('Date')
 
-        # Alle Teams sammeln
+        # get all teams
         teams = pd.unique(df[['HomeTeam', 'AwayTeam']].values.ravel())
 
-        # Init für Teamstände
+        # initialize the standings and progression calculation elements
+        # progression will combine all table snapshots after each matchday in one data frame
         standings = {team: {'Points': 0, 'GF': 0, 'GA': 0, 'GD': 0} for team in teams}
         progression = []
 
-        # Spiele durchgehen
+        # iterate through all matches of the selected season and league
         for _, match in df.iterrows():
             home = match['HomeTeam']
             away = match['AwayTeam']
             gf_home = match['FTHG']
             gf_away = match['FTAG']
 
-            # Punkte updaten
+            # update the points
             if gf_home > gf_away:
                 standings[home]['Points'] += 3
             elif gf_home < gf_away:
@@ -155,7 +156,7 @@ class StatsCalculator:
                 standings[home]['Points'] += 1
                 standings[away]['Points'] += 1
 
-            # Tore und GD updaten
+            # calculate goals and goal difference
             standings[home]['GF'] += gf_home
             standings[home]['GA'] += gf_away
             standings[home]['GD'] = standings[home]['GF'] - standings[home]['GA']
@@ -164,16 +165,17 @@ class StatsCalculator:
             standings[away]['GA'] += gf_home
             standings[away]['GD'] = standings[away]['GF'] - standings[away]['GA']
 
-            # Aktuelle Tabelle erstellen und nach Punkten, GD, GF sortieren
+            # create the tabel after the matchday. sort it by points to get the overview completely
             table = (
                 pd.DataFrame.from_dict(standings, orient='index')
                 .assign(Team=lambda x: x.index)
                 .sort_values(by=['Points', 'GD', 'GF'], ascending=[False, False, False])
                 .reset_index(drop=True)
             )
+            # create the rank
             table['Rank'] = table.index + 1
 
-            # Snapshot für Heim- und Auswärtsteam
+            # save the snapshot of the calculated table in the progressions
             for team in [home, away]:
                 team_games_played = len([p for p in progression if p['Team'] == team])
                 row = table.loc[table['Team'] == team].iloc[0]
