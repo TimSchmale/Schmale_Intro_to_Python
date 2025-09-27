@@ -102,7 +102,10 @@ class StatsCalculator:
         """
         Calculate team standings progression over a season in a team-centered approach.
         """
+        # get a data frame copy
         df = self.data[(self.data['league'] == league) & (self.data['year'] == season)].copy()
+
+        # raise an error if league or year are not given
         if df.empty:
             available_leagues = self.data['league'].unique()
             available_seasons = self.data['year'].unique()
@@ -112,25 +115,29 @@ class StatsCalculator:
                 f"Available seasons: {sorted(available_seasons)}"
             )
 
+        # make sure date format is correct and get all teams
         df['Date'] = pd.to_datetime(df['Date'])
         teams = pd.unique(df[['HomeTeam', 'AwayTeam']].values.ravel())
 
+        # initialize the progression
         progression = []
 
-        # Teamzentrierte Berechnung
+        # iterate over teams to calculate their individual season progression
         for team in teams:
             team_matches = df[(df['HomeTeam'] == team) | (df['AwayTeam'] == team)].sort_values('Date')
             points = 0
             gf = 0
             ga = 0
 
+            # iterate over all games for selected team. This enables an easy matchday calculation independent of the
+            # dates which build one league matchday
             for matchday, (_, match) in enumerate(team_matches.iterrows(), 1):
                 if match['HomeTeam'] == team:
                     scored, conceded = match['FTHG'], match['FTAG']
                 else:
                     scored, conceded = match['FTAG'], match['FTHG']
 
-                # Punkte aktualisieren
+                # only update the selected team, ignore the opponent
                 if scored > conceded:
                     points += 3
                 elif scored == conceded:
@@ -140,6 +147,7 @@ class StatsCalculator:
                 ga += conceded
                 gd = gf - ga
 
+                # update the teams progression
                 progression.append({
                     'Team': team,
                     'Matchday': matchday,
@@ -150,9 +158,10 @@ class StatsCalculator:
                     'Date': match['Date']
                 })
 
+        # build a data frame
         prog_df = pd.DataFrame(progression)
 
-        # Ränge pro Matchday bestimmen
+        # calculate the rankings per matchday after all team progressions (points) have been calculated
         ranks = []
         for md, group in prog_df.groupby('Matchday'):
             ranked = group.sort_values(by=['Points', 'GD', 'GF'], ascending=[False, False, False]).copy()
