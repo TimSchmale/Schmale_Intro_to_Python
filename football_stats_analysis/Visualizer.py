@@ -20,21 +20,28 @@ class Visualizer:
         summary : pd.DataFrame
             DataFrame containing summary statistics for leagues.
         """
+        # raise an error for empty inputs
         if progression is None or progression.empty:
-            raise ValueError("progression must not be empty. Please provide a valid DataFrame.")
+            raise ValueError("Progression must not be empty. Please provide a valid DataFrame.")
         self.progression = progression
 
         if summary is None or summary.empty:
-            raise ValueError("summary must not be empty. Please provide a valid DataFrame.")
+            raise ValueError("Summary must not be empty. Please provide a valid DataFrame.")
         self.summary = summary
 
     def visualize_progression(self) -> None:
+        # raise an error for empty progression
+        if self.progression is None or self.progression.empty:
+            raise ValueError("progression must not be empty. Please provide a valid DataFrame.")
+
         df_prog = self.progression.sort_values('Matchday')
+
+        # in need of more colours thane the 10 standard ones
         teams = df_prog['Team'].unique()
         n_teams = len(teams)
+        colors = cm.get_cmap('tab20', n_teams)
 
-        colors = cm.get_cmap('tab20', n_teams)  # tab20 colormap mit n_teams Farben
-
+        # initialize the subplots
         fig, axes = plt.subplots(1, 2, figsize=(18, 7))
 
         # Rankings plot
@@ -60,6 +67,7 @@ class Visualizer:
         axes[1].legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         axes[1].grid(True, alpha=0.3)
 
+        # give out the plot
         plt.tight_layout()
         plt.show()
 
@@ -67,13 +75,20 @@ class Visualizer:
         """
         Visualize home vs away points and goals for all leagues as side-by-side bar charts.
         """
-        df = self.summary  # sollte overview_t liefern
+        # raise an error for an empty summary
+        if self.summary is None or self.summary.empty:
+            raise ValueError("Summary must not be empty. Please provide a valid DataFrame.")
 
+        # get the summary
+        df = self.summary
+
+        # get the basic plot info
         leagues = df.columns
         n = len(leagues)
-        x = np.arange(n)  # Positions for bars
-        width = 0.35  # Breite der Balken
+        x = np.arange(n)
+        width = 0.35
 
+        # initialize the subplots
         fig, axes = plt.subplots(1, 2, figsize=(18, 7))
 
         # create plot one for the points
@@ -100,5 +115,6 @@ class Visualizer:
         axes[1].legend()
         axes[1].grid(axis='y', alpha=0.3)
 
+        # print the plot
         plt.tight_layout()
         plt.show()
