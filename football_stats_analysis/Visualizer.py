@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import numpy as np
 
 class Visualizer:
@@ -28,27 +29,31 @@ class Visualizer:
         self.summary = summary
 
     def visualize_progression(self) -> None:
-        """
-        Visualize league progression as line plots for team rankings and points
-        based on the precomputed progression table in self.progression.
-        """
         df_prog = self.progression.sort_values('Matchday')
+        teams = df_prog['Team'].unique()
+        n_teams = len(teams)
+
+        colors = cm.get_cmap('tab20', n_teams)  # tab20 colormap mit n_teams Farben
 
         fig, axes = plt.subplots(1, 2, figsize=(18, 7))
 
-        # create the first plot based on the rankings
-        for team, team_df in df_prog.groupby('Team'):
-            axes[0].plot(team_df['Matchday'], team_df['Rank'], marker='o', label=team)
-        axes[0].invert_yaxis()  # 1st place on top
+        # Rankings plot
+        for i, team in enumerate(teams):
+            team_df = df_prog[df_prog['Team'] == team]
+            axes[0].plot(team_df['Matchday'], team_df['Rank'], marker='o',
+                         label=team, color=colors(i))
+        axes[0].invert_yaxis()
         axes[0].set_xlabel('Matchday')
         axes[0].set_ylabel('Rank')
         axes[0].set_title('Team Rankings Over the Season')
         axes[0].legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         axes[0].grid(True, alpha=0.3)
 
-        # create the second plot based on the points
-        for team, team_df in df_prog.groupby('Team'):
-            axes[1].plot(team_df['Matchday'], team_df['Points'], marker='o', label=team)
+        # Points plot
+        for i, team in enumerate(teams):
+            team_df = df_prog[df_prog['Team'] == team]
+            axes[1].plot(team_df['Matchday'], team_df['Points'], marker='o',
+                         label=team, color=colors(i))
         axes[1].set_xlabel('Matchday')
         axes[1].set_ylabel('Points')
         axes[1].set_title('Points Progression Over the Season')
