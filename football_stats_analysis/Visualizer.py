@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 class Visualizer:
     """
@@ -57,3 +58,42 @@ class Visualizer:
         plt.tight_layout()
         plt.show()
 
+    def visualize_summary(self) -> None:
+        """
+        Visualize home vs away points and goals for all leagues as side-by-side bar charts.
+        """
+        df = self.summary  # sollte overview_t liefern
+
+        leagues = df.columns
+        n = len(leagues)
+        x = np.arange(n)  # Positions for bars
+        width = 0.35  # Breite der Balken
+
+        fig, axes = plt.subplots(1, 2, figsize=(18, 7))
+
+        # create plot one for the points
+        home_points = df.loc['HomeXPoints']
+        away_points = df.loc['AwayXPoints']
+        axes[0].bar(x - width / 2, home_points, width, label='Home Points', color='skyblue')
+        axes[0].bar(x + width / 2, away_points, width, label='Away Points', color='salmon')
+        axes[0].set_xticks(x)
+        axes[0].set_xticklabels(leagues, rotation=45, ha='right')
+        axes[0].set_ylabel('Average Points')
+        axes[0].set_title('Home vs Away Points per League')
+        axes[0].legend()
+        axes[0].grid(axis='y', alpha=0.3)
+
+        # create goal plot
+        home_goals = df.loc['HomeGoals']
+        away_goals = df.loc['AwayGoals']
+        axes[1].bar(x - width / 2, home_goals, width, label='Home Goals', color='skyblue')
+        axes[1].bar(x + width / 2, away_goals, width, label='Away Goals', color='salmon')
+        axes[1].set_xticks(x)
+        axes[1].set_xticklabels(leagues, rotation=45, ha='right')
+        axes[1].set_ylabel('Average Goals')
+        axes[1].set_title('Home vs Away Goals per League')
+        axes[1].legend()
+        axes[1].grid(axis='y', alpha=0.3)
+
+        plt.tight_layout()
+        plt.show()
