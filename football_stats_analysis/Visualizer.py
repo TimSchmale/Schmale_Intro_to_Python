@@ -111,8 +111,8 @@ class Visualizer:
         axes[1].grid(axis='y', alpha=0.3)
 
         # Plot 3: Expected Points
-        axes[2].bar(x - width / 2, df.loc['HomeXPointsExpected'], width, label='Home XPoints', color='skyblue')
-        axes[2].bar(x + width / 2, df.loc['AwayXPointsExpected'], width, label='Away XPoints', color='salmon')
+        axes[2].bar(x - width / 2, df.loc['HomeXPoints'], width, label='Home XPoints', color='skyblue')
+        axes[2].bar(x + width / 2, df.loc['AwayXPoints'], width, label='Away XPoints', color='salmon')
         axes[2].set_xticks(x)
         axes[2].set_xticklabels(leagues, rotation=45, ha='right')
         axes[2].set_ylabel('Average XPoints')
