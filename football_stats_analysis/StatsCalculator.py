@@ -192,3 +192,47 @@ class StatsCalculator:
 
         return pd.DataFrame(progression)
 
+    def league_comparison(self) -> pd.DataFrame:
+        """
+        Create a summary table with key information about all leagues in the dataset.
+
+        Returns
+        -------
+        pd.DataFrame
+            Table with columns [League, Season, Matches, Teams, Goals, AvgGoalsPerMatch].
+        """
+        # raise an error if no data is available
+        if self.data is None or self.data.empty:
+            raise ValueError("No data available.")
+
+        # create an overview table of descriptive statistics
+        overview = (
+            self.data.groupby(['league'])
+            .agg(
+                Seasons=('year', 'nunique'),
+                Matches=('Date', 'count'),
+                DifferentTeams=('HomeTeam', lambda x: len(set(x) | set(self.data.loc[x.index, 'AwayTeam']))),
+                HomeGoals=('FTHG', 'mean'),
+                AwayGoals=('FTAG', 'mean'),
+                HomeXGoals=('HxG', 'mean'),
+                AwayXGoals=('AxG', 'mean'),
+                HomeXPoints=('HxPTS', 'mean'),
+                AwayXPoints=('AxPTS', 'mean'),
+                HomeFouls=('HF', 'mean'),
+                AwayFouls=('AF', 'mean'),
+                HomeYellowCards=('HY', 'mean'),
+                AwayYellowCards=('AY', 'mean'),
+                HomeRedCards=('HR', 'mean'),
+                AwayRedCards=('AR', 'mean'),
+                HomeAvgAge=('HomeAvgAge', 'mean'),
+                AwayAvgAge=('AwayAvgAge', 'mean'),
+                HomeMarketValue=('HomeMV', 'mean'),
+                AwayMarketValue=('AwayMV', 'mean')
+            )
+            .reset_index()
+        )
+
+        # transpose and round
+        overview_t = overview.set_index("league").T.round(2)
+
+        return overview_t
