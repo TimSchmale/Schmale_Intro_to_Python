@@ -96,6 +96,15 @@ class StatsCalculator:
         # Sort by Points, Goal Difference, Goals For
         table = table.sort_values(by=["Points", "GD", "GF"], ascending=[False, False, False])
 
+        # Get index column starting with 1 instead of 0
+        table = (
+            table.reset_index()
+            .rename(columns={"index": "Team"})
+            .reset_index(drop=True)
+        )
+
+        table.insert(0, "Rank", range(1, len(table) + 1))
+
         return table.reset_index().rename(columns={"index": "Team"})
 
     def league_progression(self, league: str, season: str) -> pd.DataFrame:
