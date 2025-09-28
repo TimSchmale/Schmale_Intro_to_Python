@@ -20,13 +20,7 @@ class Visualizer:
         summary : pd.DataFrame
             DataFrame containing summary statistics for leagues.
         """
-        # raise an error for empty inputs
-        if progression is None or progression.empty:
-            raise ValueError("Progression must not be empty. Please provide a valid DataFrame.")
         self.progression = progression
-
-        if summary is None or summary.empty:
-            raise ValueError("Summary must not be empty. Please provide a valid DataFrame.")
         self.summary = summary
 
     def visualize_progression(self) -> None:
