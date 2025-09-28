@@ -105,7 +105,7 @@ class StatsCalculator:
 
         table.insert(0, "Rank", range(1, len(table) + 1))
 
-        return table.reset_index().rename(columns={"index": "Team"})
+        return table
 
     def league_progression(self, league: str, season: str) -> pd.DataFrame:
         """
