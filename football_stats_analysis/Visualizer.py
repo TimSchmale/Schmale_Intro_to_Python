@@ -9,7 +9,7 @@ class Visualizer:
     team progression, league summaries, and team comparisons.
     """
 
-    def __init__(self, progression: pd.DataFrame, summary: pd.DataFrame) -> None:
+    def __init__(self, progression: pd.DataFrame = None, summary: pd.DataFrame = None) -> None:
         """
         Initialize the Visualizer class with progression and summary data.
 
