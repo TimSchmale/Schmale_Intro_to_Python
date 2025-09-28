@@ -104,6 +104,7 @@ class StatsCalculator:
         )
 
         table.insert(0, "Rank", range(1, len(table) + 1))
+        table = table.set_index("Rank")
 
         return table
 
