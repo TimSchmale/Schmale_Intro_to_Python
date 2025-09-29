@@ -15,7 +15,42 @@ Each file includes detailed information for home and away teams, such as:
 
 Clone this repository and install the package locally:
 
-bash
+```bash
 git clone https://github.com/username/football_stats_analysis.git
 cd football_stats_analysis
 pip install -e .
+```
+
+## Usage in notebooks
+After installation, you can import and use the package as follows:
+
+```bash
+from football_stats_analysis.DataHandler import DataHandler
+from football_stats_analysis.StatsCalculator import StatsCalculator
+from football_stats_analysis.Visualizer import Visualizer
+```
+## Coding Examples
+### Load the dataset
+```bash
+dh = DataHandler()
+df = dh.load_data()
+```
+
+### Calculate league table
+```bash
+sc = StatsCalculator(df)
+sc.league_table('epl', '2021-2022')
+```
+
+### Visualize seasonal progression
+```bash
+progression = sc.league_progression('epl', '2021-2022')
+vis = Visualizer()
+vis.progression = progression
+vis.visualize_progression()
+```
+
+## Licence
+This repository is licensed under the MIT License. See LICENSE.txt for details.
+
+
