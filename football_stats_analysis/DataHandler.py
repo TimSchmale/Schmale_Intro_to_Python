@@ -97,8 +97,11 @@ class DataHandler:
 
         # select relevant columns (or keep all)
         if relevant_cols:
-            keep = [col for col in relevant_cols if col in df.columns]
-            df = df[keep]
+            missing_cols = [col for col in relevant_cols if col not in df.columns]
+            if missing_cols:
+                raise KeyError(f"The following columns are missing from the data: {missing_cols}."
+                               f"You can choose from the following columns:{df.columns}.")
+            df = df[relevant_cols]
 
         # save and return the pre-processed df
         self.data = df
