@@ -17,3 +17,5 @@ dependencies = [
     "numpy>=1.21",
     "matplotlib>=3.5"
 ]
+
+packages = [{ include = "football_data_analysis", from = "src" }]
