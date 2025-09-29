@@ -18,4 +18,4 @@ dependencies = [
     "matplotlib>=3.5"
 ]
 
-packages = [{ include = "football_data_analysis", from = "src" }]
+packages = [{ include = "football_stats_analysis", from = "src" }]
